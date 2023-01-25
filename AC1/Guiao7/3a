@@ -1,0 +1,19 @@
+# Mapa de Registos
+#
+#
+#
+#
+
+strcopy:
+		li	$t0, 0
+		move	$t1, $a0
+do:		addu	$a1, $a1, $t0
+		addu	$a0, $a0, $t0
+		lb	$t2, 0($a1)
+		sb	$t2, 0($a0)
+		addi	$t0, $t0, 1
+		sb	$t3, 4($t1)
+		bne	$t3, '\0', do
+end:		move	$v0, $t1
+		jr	$ra	
+		

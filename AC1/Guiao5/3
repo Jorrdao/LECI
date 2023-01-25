@@ -1,0 +1,86 @@
+# Mapa de registos
+# i: $t0
+# lista: $t1
+# i temp : $t2
+# houvetroca : $t4
+# SIZE-1 : $t5
+# lista[i] : $t6
+# lista[i+1] : $t7
+# aux : $t8
+
+
+
+	.data
+	.eqv SIZE,5
+str1: 	.asciiz     "\nIntroduza um numero: "
+str2:	.asciiz	    ";"
+	.align 2
+lista:	.space 20 			# SIZE * 4
+	.eqv FALSE, 0
+	.eqv TRUE, 1
+	.eqv read_int, 5
+	.eqv print_string, 4
+	.eqv print_int10, 1
+	.text
+	.globl main
+	
+main: 	li 	$t0,0 			# i = 0;
+	li	$t5, SIZE
+	sub	$t5, $t5, 1		# SIZE -1
+
+while: 	bge	$t0, SIZE , do		# while(i < SIZE) {
+	la	$a0, str1		# print_string;
+	li	$v0, print_string	#
+	syscall				#
+	li 	$v0, read_int   	#
+	syscall 			# $v0 = read_int();
+	la 	$t1, lista 		# $t1 = lista (ou &lista[0])
+	sll 	$t2, $t0, 2 		#
+	addu 	$t1, $t1, $t2		# $t2 = &lista[i]
+	sw 	$v0, 0($t1)		# lista[i] = read_int();
+	addi 	$t0, $t0, 1 		# i++
+	j	while 			# }
+	
+do:	li	$t4, FALSE		# do{   houvetroca = false
+	li	$t0, 0			#      i = o
+					#
+for:	bge	$t0, SIZE, endw		# for(int i=0; i<size-1; i++){
+	la	$t1, lista		#	$t1 = &lista
+	sll	$t2, $t0, 2		#	$t2 = i * 4
+	addu	$t1, $t2, $t1		#	$t1 = lista[i*4]
+	lw	$t6, 0($t1)		#	$t6 = lista[i*4]
+	lw	$t7, 4($t1)		#	$t7 = lista[i*4+1]
+					#
+if:	bge	$t7, $t6, endif		# 		if(lista[i] < lista[i+1]){
+	sw	$t6, 4($t1)		#   			lista[i] = aux(lista[i+1])
+	sw	$t7, 0($t1)		#  			lista[i+1] = lista[i]
+	li	$t4, TRUE		#   			houvetroca = TRUE
+					#   		}
+endif:	addi	$t0, $t0, 1		#  	i++
+	j	for			# 
+					#
+endw:	beq	$t4, TRUE, do		# }while(houvetroca == TRUE)
+
+print:	li	$t0, 0			# i = 0
+	
+for2:	bge	$t0, $t5, end		# for(int i = 0; i < size-1
+	sll	$t2, $t0, 2		# 	i = i * 4
+	la	$t1, lista		# 	$t1 = &lista
+	addu	$t1, $t1, $t2
+	lw	$a0, 0($t1)		#	$a0 = lista[i]
+	li	$v0, print_int10	#	print(lista[i])
+	syscall				#
+	la	$a0, str2		#	print(;)
+	li	$v0, print_string	#
+	syscall				#
+	addi	$t0, $t0, 1		#	i++;
+	j	for2			#
+	
+end:	jr	$ra			#	
+			
+		
+
+	
+			
+		
+	

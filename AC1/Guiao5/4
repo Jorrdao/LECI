@@ -1,0 +1,74 @@
+# Mapa de Registos
+# $t0 - p
+# $t1 - pultimo
+# $t2 - aux
+# $t3 - houvetroca
+
+
+
+
+
+	.data
+str1:	.asciiz		"Insira um número:\n"
+str2:	.asciiz		";"
+	.eqv	print_string, 4
+	.eqv	print_int, 1
+	.eqv	read_int, 5
+	.eqv    SIZE, 10
+	.eqv	TRUE, 1
+	.eqv	FALSE, 0
+	.align 2
+lista:	.space 40
+	.text
+	.globl main
+	
+main:	la	$t0, lista		# p = lista
+	li	$t1, SIZE		# pultimo = SIZE
+	sub	$t1, $t1, 1		# pultimo = SIZE-1
+	sll	$t1, $t1, 2		# pultimo = (SIZE-1) * 4
+	addu	$t1, $t1, $t0		# pultimo = pultimo + lista
+					
+for:	bge	$t0, $t1,do		# for(int p = lista; p < pultimo; p++){		
+	la	$a0, str1		#	print(Introduza um número)
+	li	$v0, print_string	#	
+	syscall				#
+	li	$v0, read_int		#	read_int
+	syscall				#		
+	sw	$v0, 0($t0)		#	*p = read_int() 
+	addiu	$t0, $t0, 4		#	p++
+	j	for			# }
+	
+do:	li	$t3, FALSE		# houvetroca = FALSE
+	la	$t0, lista		# p = lista
+	
+for2:	bge	$t0, $t1, endw		# for( p = lista; p < pultimo; p++){
+	lw	$t4, 0($t0)		#  $t4 = *p
+	lw	$t5, 4($t0)		#  $t5 = *(p+1)
+	
+if:	ble	$t4, $t5, endif
+	sw	$t4, 4($t0)
+	sw	$t5, 0($t0)
+	li	$t3, TRUE
+	
+endif:	addi	$t0, $t0, 4
+	j 	for2
+	
+endw:	beq	$t3, TRUE, do
+	la	$t0, lista
+
+for3:	bge	$t0, $t1, end
+	lw	$a0, 0($t0)
+	li	$v0, print_int
+	syscall
+	la	$a0, str2
+	li	$v0, print_string
+	syscall
+	addi	$t0, $t0, 4
+	j	for3
+		
+	
+	
+end:	jr	$ra
+	 		
+	
+	

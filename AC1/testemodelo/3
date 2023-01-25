@@ -1,0 +1,62 @@
+# Mapa de resgistos
+# $t0 - p1
+# $t1 - p2
+# $t2 - n_even
+# $t3 - n_odd
+# $t4 - p1 + SIZE
+# $t5 - aux
+# $t6 - p2 + n_odd
+
+	.data
+	.align 2
+a:	.space 140
+c:	.space 140
+	.eqv	SIZE, 3#5
+	.eqv	print_int10, 1
+	.eqv	read_int, 5
+	.text
+	.globl main
+
+
+main:		la	$t0, a			# p1 = a
+		li	$t7, SIZE		# $t7 = SIZE
+		sll	$t7, $t7, 2		# size *4
+		addu	$t4, $t7, $t0		# p1 = a + SIZE
+
+for1:		bge	$t0, $t4, endf1		# for( p1 = a; p1 < a+SIZE; p1++){
+		li	$v0, read_int		#$vo = read_int	
+		syscall
+		sw	$v0, 0($t0)		# 	*p = $v0
+		addi	$t0, $t0, 4		#	p++
+		j	for1			# }
+
+endf1:		la	$t0, a			# p1 = a
+		la	$t1, c			# p2 = b
+		
+for2:		bge	$t0, $t4, endf2		# for( p2 = b; p1 < a + SIZE; p1++){
+		lw	$t5, 0($t0)		#	aux = *p1
+		rem	$t8, $t5, 2		#     rem *p1 por 2
+
+if:		beqz	$t8, endif		#	if(*p1%2 != 0){
+		sw	$t5, 0($t1)		#		*p2 = *p1
+		addi	$t1, $t1, 4		#		p2++
+		addi	$t3, $t3, 1		#		n_odd++
+		addi	$t0, $t0, 4		#		p1++
+		j	for2			# 	}
+		
+endif:		addi	$t2, $t2, 1		#	n_even++
+		addi	$t0, $t0, 4		#	*p1++
+		j	for2			# }
+
+endf2:		la	$t1, c 			# p2 = b
+		sll	$t3, $t3, 2		# n_odd * 4
+		addu	$t6, $t1, $t3		# b + n_odd
+
+for3:		bge	$t1, $t6, end		# for( p2 = b; p2 < (b + n_odd); p2++){
+		lw	$a0, 0($t1)		#
+		li	$v0, print_int10	# print(*p2)
+		syscall	
+		addi	$t1, $t1, 4		# p2++
+		j	for3			# }
+
+end:		jr	$ra			# fim do programa  
